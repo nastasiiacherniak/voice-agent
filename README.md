@@ -4,6 +4,9 @@ A browser voice agent for a small equipment rental desk. One person at a time sp
 for equipment and dates, changes their mind, and confirms. The agent checks real inventory in a
 local SQLite database and writes exactly one reservation, only after explicit spoken confirmation.
 
+**[Try it live](https://nastasiiacherniak.github.io/voice-agent/)** — the whole thing, running in
+the page. See [The live demo](#the-live-demo) for what that costs.
+
 Built against the handoff spec in [ARCHITECTURE.md](ARCHITECTURE.md). Where this implementation
 departs from that spec, it says so and why — see [Deviations](#deviations-from-architecturemd).
 
@@ -27,7 +30,45 @@ npm test        # 145 tests: domain, gate, state machine, six recorded conversat
 npm run latency # latency percentiles from metrics/turns.jsonl
 npm run cost    # cost per conversation minute, three stacks
 npm run snapshot # dump the database as markdown
+npm run build:pages && npm run preview:pages   # the static demo, on :8788
 ```
+
+## The live demo
+
+GitHub Pages serves files, not processes, so there is no Node to hold the session and no disk to
+hold the database. The demo does not fake that: **the server runs in the page**. The same
+`Session`, the same `DeterministicPlanner`, the same SQL against the same schema — SQLite itself
+comes along as [sql.js](https://sql.js.org), compiled to WebAssembly (658 kB).
+
+The substitution is four aliases in [`scripts/build-pages.ts`](scripts/build-pages.ts) and the
+shims in [`src/browser/shims/`](src/browser/shims/):
+
+| Alias | Stands in for | Why |
+| --- | --- | --- |
+| `better-sqlite3` | [`sqlite.ts`](src/browser/shims/sqlite.ts) | the native module cannot load in a browser; sql.js runs the same engine |
+| `node:crypto` | [`crypto.ts`](src/browser/shims/crypto.ts) | Web Crypto's digest is async and the hold tokens are synchronous throughout |
+| `node:fs` / `node:path` | [`node-fs.ts`](src/browser/shims/node-fs.ts) | no filesystem; the database is in memory and the metrics go nowhere |
+| `src/agent/llm.ts` | [`llm.ts`](src/browser/shims/llm.ts) | keeps the Anthropic SDK — and a key-shaped hole — out of a public page |
+
+Nothing under `src/booking` or `src/agent` is forked for the browser, and `app.js` takes exactly one
+branch: when `window.__voiceBookingDemo` is present it gets a socket-shaped object from
+[`src/browser/demo.ts`](src/browser/demo.ts) instead of a `WebSocket`. The protocol across it is
+unchanged.
+
+So the on-screen proof still holds: the panel renders what a real SQL query returns, the unique
+index on `hold_hash` still refuses the second "yes", and the whole voice path works — Pages is
+HTTPS, which is what the Web Speech API requires.
+
+Three things differ from `npm start`, all of them consequences of having no server:
+
+- **The database lives in the tab.** A reload reseeds it; nobody else sees your bookings.
+- **The deterministic planner always drives.** A static page cannot hold an API key — anything
+  shipped to it is public. To see the LLM driver, run it locally with `ANTHROPIC_API_KEY` set.
+- **Per-turn metrics are dropped** rather than appended to `metrics/turns.jsonl`, so `npm run latency`
+  has nothing to read from a Pages session. The first-answer readout in the navbar still works; it
+  is measured in the browser.
+
+Pushing to `main` rebuilds and redeploys it ([`.github/workflows/pages.yml`](.github/workflows/pages.yml)).
 
 ### Seeded inventory
 

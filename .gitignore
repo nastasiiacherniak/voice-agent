@@ -16,5 +16,8 @@ metrics/*.jsonl
 # Built by `npm run build:web` on every start.
 src/web/vendor/
 
+# The static Pages demo, built by `npm run build:pages` and by CI.
+dist/
+
 # Editor/agent local state; .claude/launch.json is checked in on purpose.
 .claude/settings.local.json

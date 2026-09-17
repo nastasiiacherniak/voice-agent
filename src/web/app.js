@@ -71,10 +71,25 @@ let hasConnected = false;
 let announcedDisconnect = false;
 let wasListeningBeforeDrop = false;
 
-function connect() {
+/* The GitHub Pages build has no server to talk to, so it runs the same
+ * Session in the page (src/browser/demo.ts) and hands us a socket-shaped
+ * object in place of a WebSocket. The protocol across it is identical, which
+ * is why this is the only branch in the file. */
+const demoReady = window.__voiceBookingDemo ?? null;
+let demo = null;
+
+async function openSocket() {
+  if (!demoReady) {
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    return new WebSocket(`${proto}://${location.host}/ws`);
+  }
+  demo = await demoReady;
+  return demo.connect();
+}
+
+async function connect() {
   clearTimeout(reconnectTimer);
-  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  ws = new WebSocket(`${proto}://${location.host}/ws`);
+  ws = await openSocket();
 
   ws.onopen = () => {
     reconnectAttempts = 0;
@@ -767,7 +782,9 @@ for (const chip of document.querySelectorAll('.chip[data-prompt]')) {
 
 ui.resetBtn.addEventListener('click', async () => {
   hardStopSpeech(false);
-  await fetch('/api/reset', { method: 'POST' });
+  // Reseeding the database is the server's job, or the demo backend's.
+  if (demo) demo.resetData();
+  else await fetch('/api/reset', { method: 'POST' });
   send({ type: 'reset' });
   withTransition(() => {
     ui.transcript.innerHTML = '';
