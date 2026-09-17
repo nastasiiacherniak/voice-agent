@@ -88,12 +88,15 @@ export async function createBackend(wasmUrl: string): Promise<DemoBackend> {
         vadSilenceMs: DEFAULT_VAD_SILENCE_MS,
       });
 
-      // The caller assigns its handlers after this returns, so opening waits a
-      // tick - exactly as a real connection would.
-      queueMicrotask(() => {
+      /* The caller assigns its handlers after this returns, and it gets there
+       * through an await - so the assignment is itself a microtask. Opening on
+       * queueMicrotask would beat it and call an onopen that is still null,
+       * leaving the page connected but with its controls disabled forever.
+       * setTimeout is a macrotask: every pending microtask runs first. */
+      setTimeout(() => {
         socket.onopen?.();
         session.start();
-      });
+      }, 0);
 
       return socket;
     },
