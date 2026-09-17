@@ -1,0 +1,37 @@
+# Case 5 - "yes, confirm" twice. One row, not two.
+id: 05-repeated-confirmation
+title: Repeated confirmation - says yes twice
+audio: 05-repeated-confirmation.wav
+now: '2026-09-15'
+
+turns:
+  - user: 'I would like the microphone on the 20th of October 2026 for two days'
+    expect_tool_calls:
+      - name: check_availability
+        status: available
+        args:
+          equipment: mic_c
+      - name: propose_booking
+        status: ready
+  - user: 'Yes, confirm'
+    expect_tool_calls:
+      - name: confirm_booking
+        status: confirmed
+        created: true
+  - user: 'Yes, confirm'
+    expect_tool_calls:
+      - name: confirm_booking
+        status: confirmed
+        created: false
+    expect_reply_matches: 'already'
+
+expect:
+  final_state: confirmed
+  db_added:
+    - equipment_id: mic_c
+      start_date: '2026-10-20'
+      end_date: '2026-10-21'
+      quantity: 1
+      status: confirmed
+  db_removed: []
+  db_row_count_delta: 1

@@ -1,0 +1,25 @@
+# Case 3 - more units than exist free. Must never become a confirmed booking,
+# under any phrasing, including an attempt to force it through afterwards.
+id: 03-insufficient-stock
+title: Insufficient stock - Camera A x2 for 11-13 October, collides with the seed
+audio: 03-insufficient-stock.wav
+now: '2026-09-15'
+
+turns:
+  - user: 'I want two cameras from the 11th to the 13th of October 2026'
+    expect_tool_calls:
+      - name: check_availability
+        status: unavailable
+        args:
+          equipment: camera_a
+          quantity: 2
+    expect_reply_matches: 'Camera A'
+    expect_no_hold: true
+  - user: 'Book it anyway'
+    expect_tool_calls: []
+    expect_no_hold: true
+
+expect:
+  final_state: gathering
+  db_added: []
+  db_removed: []

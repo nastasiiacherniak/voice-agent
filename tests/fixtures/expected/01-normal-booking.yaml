@@ -1,0 +1,36 @@
+# Case 1 - a normal booking.
+# Written before the harness was run. Expected outcome recorded first.
+id: 01-normal-booking
+title: Normal booking - Tripod B, 14-16 October 2026, one unit
+audio: 01-normal-booking.wav
+now: '2026-09-15'
+
+turns:
+  - user: "Hello, I'd like to rent a tripod please"
+    expect_tool_calls: []          # nothing to check yet - no dates given
+    expect_reply_matches: 'dates'
+  - user: 'From the 14th to the 16th of October 2026'
+    expect_tool_calls:
+      - name: check_availability
+        status: available
+        args:
+          equipment: tripod_b
+          start_date_phrase: '14th'
+      - name: propose_booking
+        status: ready
+    expect_reply_matches: 'Tripod B'
+  - user: 'Yes, confirm'
+    expect_tool_calls:
+      - name: confirm_booking
+        status: confirmed
+        created: true
+
+expect:
+  final_state: confirmed
+  db_added:
+    - equipment_id: tripod_b
+      start_date: '2026-10-14'
+      end_date: '2026-10-16'
+      quantity: 1
+      status: confirmed
+  db_removed: []

@@ -1,0 +1,644 @@
+/* Light theme, after the Copilot and SchoolAI references: a warm off-white
+   ground, one prominent rounded composer sitting low on the page, and a
+   floating state panel. Colour is spent only on meaning - stock warnings,
+   tool results, the send button. Icons are Lucide. */
+
+:root {
+  --bg: #f4f2ef;
+  --surface: #ffffff;
+  --surface-2: #faf9f7;
+  --surface-3: #efece7;
+  --line: #e6e2db;
+  --line-strong: #d8d2c8;
+  --text: #1b1a18;
+  --muted: #6e6a64;
+  --faint: #97928a;
+  --accent: #5b6cf0;
+  --accent-soft: #eef0fe;
+  --good: #2e9e52;
+  --good-soft: #e9f6ec;
+  --warn: #b0780f;
+  --bad: #cf4436;
+  --navbar-h: 60px;
+  --radius-lg: 24px;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow-sm: 0 1px 2px rgba(28, 25, 20, 0.05);
+  --shadow: 0 1px 2px rgba(28, 25, 20, 0.05), 0 10px 28px rgba(28, 25, 20, 0.07);
+  --shadow-lg: 0 2px 4px rgba(28, 25, 20, 0.04), 0 18px 44px rgba(28, 25, 20, 0.1);
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --serif: ui-serif, Georgia, "Iowan Old Style", "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+
+/* Reserve the scrollbar track only below the drawer breakpoint. There the
+   panel sits in the flow and can make the page scroll, and without a reserved
+   track the arriving scrollbar narrows the viewport and shoves every centred
+   thing sideways. At drawer widths the panel is fixed, the page never scrolls,
+   and reserving the track would just show an empty scrollbar for no reason. */
+@media (max-width: 1439px) {
+  html { scrollbar-gutter: stable; }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.55 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+.icon { width: 16px; height: 16px; flex: none; }
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------------------------------------------------------------- navbar */
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: var(--navbar-h);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 20px;
+  background: rgba(244, 242, 239, 0.86);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-name { font-size: 15px; font-weight: 650; letter-spacing: -0.01em; }
+
+.nav-actions { margin-left: auto; display: flex; align-items: center; gap: 9px; }
+
+/* The brand mark is brand-mark.svg - a rounded square with a tilted lens cut
+   out of it - painted in the brand violet. It is masked rather than drawn as a
+   background image, so the colour stays one token and the lens stays a real
+   hole that the navbar shows through. */
+.brand-mark {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  background: var(--accent);
+  -webkit-mask: url(brand-mark.svg) center / contain no-repeat;
+  mask: url(brand-mark.svg) center / contain no-repeat;
+}
+
+/* Plain text, not a chip - it is a readout, not a control. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  padding: 6px 4px;
+  white-space: nowrap;
+}
+
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--surface);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 13px;
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1.4;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+.ghost:hover { color: var(--text); border-color: var(--line-strong); }
+
+.ghost.icon-only { padding: 0; width: 33px; height: 33px; justify-content: center; }
+
+/* Pressed = the state panel is open. */
+.ghost[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: #ccd3fb;
+  color: var(--accent);
+}
+
+/* ------------------------------------------------------------------ app */
+
+.app {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+}
+
+/* The conversation sits low on the page: centred while the desk is idle,
+   pinned to the bottom once turns start arriving, so the composer stays put. */
+.main {
+  display: flex;
+  justify-content: center;
+  padding: 24px 32px 28px;
+  min-width: 0;
+  height: calc(100vh - var(--navbar-h));
+  /* The beams bleed past the composer on purpose - the voice glow blooms
+     above it, the border beam spills a little outside its edge. Once the
+     composer sits at the foot of the screen that bleed runs past the viewport
+     and opens a scrollbar for a decoration nobody can scroll to. Clip both
+     axes: "clip" never creates a scroll container, so the transcript keeps its
+     own scrolling and the page gets none. */
+  overflow: clip;
+  /* No overflow-clip-margin: measured, a clip margin still counts toward the
+     document's scrollable overflow in Chrome, which brings the scrollbar back. */
+}
+.stage {
+  width: 100%;
+  max-width: 720px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+/* Once turns arrive the transcript takes the whole column and scrolls inside
+   itself, so the composer stays put at the bottom of the screen. */
+body.has-turns .stage { justify-content: flex-start; }
+body.has-turns .transcript { flex: 1 1 auto; max-height: none; min-height: 0; }
+
+.hero { text-align: center; padding: 0 0 34px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+body.has-turns .hero,
+body.listening .hero { display: none; }
+
+.greeting {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 42px;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+
+.notice {
+  margin: 0 0 16px;
+  padding: 11px 14px;
+  border: 1px solid #ecd9a8;
+  background: #fbf4e4;
+  border-radius: var(--radius);
+  color: var(--warn);
+  font-size: 13px;
+}
+
+/* ------------------------------------------------------------ voice mode */
+
+/* With the microphone open the composer is the only thing on the stage: it
+   travels to the foot of the screen, the greeting clears out, and the glow
+   around it plus the status in the placeholder carry the state. */
+body.listening .stage { justify-content: flex-end; }
+
+/* The `border-beam` and `voice-glow` beams wrap the composer, outermost
+   first. `voice-glow` reads the radius off its first child, so the host node
+   carries the composer's own corner; `border-beam` is handed the same number
+   by the island, since its first child is the voice wrapper. */
+.composer-beams { position: relative; }
+.voice-beam-host { border-radius: var(--radius-lg); }
+
+/* The status replaces "Ask anything" while the desk is working, so it reads
+   as a live label rather than a prompt. */
+body[data-mode="listening"] .composer input::placeholder,
+body[data-mode="thinking"] .composer input::placeholder,
+body[data-mode="speaking"] .composer input::placeholder {
+  color: var(--muted);
+  animation: placeholder-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes placeholder-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+/* Motion is decorative here - the placeholder already says "listening". */
+@media (prefers-reduced-motion: reduce) {
+  .composer input::placeholder {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------ transcript */
+
+.transcript {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 52vh;
+  overflow-y: auto;
+  padding: 2px 2px 20px;
+}
+.transcript:empty { padding: 0; }
+
+.turn {
+  max-width: 86%;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 14.5px;
+}
+.turn.user {
+  align-self: flex-end;
+  background: var(--accent-soft);
+  color: #22285c;
+  border: 1px solid #dde1fd;
+  border-bottom-right-radius: 4px;
+}
+.turn.agent {
+  align-self: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 4px;
+  box-shadow: var(--shadow-sm);
+}
+.turn.partial { opacity: 0.55; font-style: italic; }
+.turn.system {
+  align-self: center;
+  background: transparent;
+  color: var(--faint);
+  font-size: 12px;
+  padding: 2px 8px;
+}
+.turn.interrupted { text-decoration: line-through; opacity: 0.45; }
+.turn.undelivered { opacity: 0.55; border-color: var(--bad); }
+
+/* -------------------------------------------------------------- composer */
+
+.composer-wrap { position: relative; }
+
+/* Nothing is painted behind the composer: the page ground runs clean up to
+   its edge, and the only colour is the two beams on the element itself. */
+
+.composer {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 15px 16px 13px;
+}
+.composer:focus-within { border-color: var(--line-strong); }
+
+.composer input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 15.5px;
+  padding: 4px 2px 12px;
+  outline: none;
+}
+.composer input::placeholder { color: var(--faint); }
+
+/* Microphone and send sit together on the right. */
+.composer-row { display: flex; align-items: center; gap: 10px; }
+.composer-spacer { flex: 1; }
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+}
+.icon-btn .icon { width: 18px; height: 18px; }
+.icon-btn:hover:not(:disabled) { color: var(--text); border-color: var(--line-strong); }
+
+/* The only thing that changes when the microphone is open is the glyph: no
+   pulse, no red. The beam and the status in the placeholder already carry that state, and a
+   throbbing red control next to them was saying it a third time. */
+.icon-btn.mic .icon-off { display: none; }
+.icon-btn.mic[aria-pressed="true"] .icon-on { display: none; }
+.icon-btn.mic[aria-pressed="true"] .icon-off { display: block; }
+
+.icon-btn.send {
+  border-color: transparent;
+  background: var(--accent);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.icon-btn.send:hover:not(:disabled) { background: #4a5ce8; border-color: transparent; color: #fff; }
+
+/* The arrow is dead until there is something to send. */
+.icon-btn.send:disabled {
+  background: var(--surface-3);
+  color: var(--faint);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.icon-btn:disabled { cursor: not-allowed; }
+.composer input:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.disclaimer { margin: 14px 0 0; text-align: center; font-size: 12px; color: var(--faint); }
+
+/* ----------------------------------------------------------- suggestions */
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 24px;
+}
+body.has-turns .suggestions,
+body.listening .suggestions { display: none; }
+
+.chip {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 9px 17px;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text);
+  cursor: pointer;
+}
+.chip:hover { border-color: var(--line-strong); background: var(--surface-2); }
+
+/* ----------------------------------------------------------------- panel */
+
+/* Never a grid column: taking one would narrow the main area and shift the
+   composer off the centre of the screen every time the panel opened. It sits
+   in the flow under the conversation, and floats as a drawer only once the
+   viewport is wide enough that it cannot cover the composer. */
+.panel {
+  display: none;
+  opacity: 0;
+  translate: 10px 0;
+  transition:
+    opacity 240ms ease,
+    translate 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    display 260ms;
+  transition-behavior: allow-discrete;
+  flex-direction: column;
+  width: auto;
+  margin: 0 24px 24px;
+  padding: 0;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 18px 20px;
+}
+
+/* The drawer may only float where it clears a centred composer, so its width
+   and this breakpoint move together. With a 720px stage, a 24px right gutter
+   and the ~15px reserved scrollbar track, the layout width has to satisfy
+   L/2 >= 336 + 360, i.e. L >= 1392 and viewport >= ~1407. Rounded up to 1440
+   to leave room for wider scrollbars. */
+@media (min-width: 1440px) {
+  .panel {
+    position: fixed;
+    z-index: 15;
+    top: calc(var(--navbar-h) + 24px);
+    right: 24px;
+    width: 312px;
+    margin: 0;
+    max-height: calc(100vh - var(--navbar-h) - 48px);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+body.panel-open .panel {
+  display: flex;
+  opacity: 1;
+  translate: 0 0;
+}
+
+/* Gives the entry something to animate from, now that display is discrete. */
+@starting-style {
+  body.panel-open .panel {
+    opacity: 0;
+    translate: 10px 0;
+  }
+}
+
+.panel-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 18px 18px 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.panel-head h2 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.panel-section { margin-top: 20px; }
+.panel-section h3 {
+  margin: 0 0 9px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.hint {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.state-line { margin: 0; font-size: 12.5px; color: var(--muted); }
+.state-line strong { color: var(--text); font-weight: 650; }
+
+
+table.stock { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+table.stock th {
+  text-align: left;
+  color: var(--faint);
+  font-weight: 500;
+  font-size: 11px;
+  padding: 0 8px 6px;
+  border-bottom: 1px solid var(--line);
+}
+table.stock td {
+  padding: 8px;
+  border-bottom: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+table.stock tr:last-child td { border-bottom: 0; }
+td.zero { color: var(--bad); font-weight: 650; }
+td.low { color: var(--warn); }
+tr.fresh td { background: var(--good-soft); }
+.empty-row td { color: var(--faint); font-style: italic; }
+
+.card {
+  margin-top: 18px;
+  border: 1px solid #bfe3c9;
+  border-radius: var(--radius);
+  background: var(--good-soft);
+  padding: 14px 15px;
+}
+.card-head { display: flex; align-items: center; gap: 9px; }
+.card-head h3 { margin: 0; font-size: 13.5px; text-transform: none; letter-spacing: 0; color: var(--text); }
+.tick {
+  width: 19px; height: 19px; border-radius: 50%;
+  background: var(--good); color: #fff;
+  display: grid; place-items: center; font-size: 12px; font-weight: 700;
+  flex: none;
+}
+.card dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 5px 14px;
+  margin: 12px 0 0;
+  font-size: 12.5px;
+}
+.card dt { color: var(--muted); }
+.card dd { margin: 0; font-variant-numeric: tabular-nums; }
+
+.tool-log { margin: 0; padding-left: 18px; font-size: 12px; color: var(--muted); }
+.tool-log li { padding: 3px 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.tool-log .ok { color: var(--good); }
+.tool-log .no { color: var(--bad); }
+.tool-log .warn { color: var(--warn); }
+.tool-log li.dropped { text-decoration: line-through; opacity: 0.5; }
+
+/* -------------------------------------------------------------- scrollbars */
+
+/* Slim, arrowless, and held away from the rounded edge by a transparent border
+   on the thumb, so the bar reads as part of the card rather than bolted to it.
+   Deliberately no `scrollbar-width`: setting the standard property makes Chrome
+   ignore these pseudo-elements. */
+.panel-body::-webkit-scrollbar,
+.transcript::-webkit-scrollbar {
+  width: 10px;
+}
+.panel-body::-webkit-scrollbar-button,
+.transcript::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+.panel-body::-webkit-scrollbar-track,
+.transcript::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 10px 0;
+}
+.panel-body::-webkit-scrollbar-thumb,
+.transcript::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+.panel-body::-webkit-scrollbar-thumb:hover,
+.transcript::-webkit-scrollbar-thumb:hover {
+  background: var(--faint);
+  background-clip: padding-box;
+}
+
+/* ----------------------------------------------------- view transitions */
+
+/* Naming an element gives it its own group, so it tweens between its old and
+   new position instead of cross-fading with the rest of the page. */
+#hero { view-transition-name: hero; }
+.transcript { view-transition-name: transcript; }
+.composer-wrap { view-transition-name: composer; }
+.suggestions { view-transition-name: suggestions; }
+
+::view-transition-group(*) {
+  animation-duration: 340ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* The composer is the thing the eye follows, so it gets there first and the
+   rest of the layout settles around it. */
+::view-transition-group(composer) {
+  animation-duration: 200ms;
+  animation-delay: 100ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 220ms;
+}
+
+/* Entering voice mode is a sequence, not a dissolve:
+     0ms    the greeting and the chips clear out
+     100ms  the composer travels to the foot of the screen
+   Without the stagger you watch the chips fade through the moving composer. */
+::view-transition-group(hero),
+::view-transition-group(suggestions) {
+  animation-duration: 150ms;
+}
+::view-transition-old(hero),
+::view-transition-old(suggestions) {
+  animation: vt-fade 100ms ease-in reverse both;
+}
+::view-transition-new(hero),
+::view-transition-new(suggestions) {
+  animation: vt-fade 180ms ease-out 120ms both;
+}
+
+@keyframes vt-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* ----------------------------------------------------------- responsive */
+
+@media (max-width: 1100px) {
+  .app { align-content: start; }
+  .main { height: auto; min-height: 0; padding: 32px 24px 28px; }
+  .stage { height: auto; justify-content: flex-start; }
+  /* The column has no fixed height here, so voice mode has to claim one for
+     the composer to reach the bottom of the screen. */
+  body.listening .stage { min-height: calc(100vh - var(--navbar-h) - 60px); }
+  body.has-turns .transcript { flex: 0 1 auto; max-height: 62vh; }
+}
+
+@media (max-width: 720px) {
+  .navbar { height: auto; padding: 10px 14px; flex-wrap: wrap; gap: 10px; }
+  .nav-actions { margin-left: 0; width: 100%; flex-wrap: wrap; }
+  .greeting { font-size: 32px; }
+  .main { padding: 24px 16px; }
+  .panel { margin: 0 16px 16px; }
+  .turn { max-width: 94%; }
+}

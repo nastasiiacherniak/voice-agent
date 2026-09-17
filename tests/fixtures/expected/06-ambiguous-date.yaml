@@ -1,0 +1,30 @@
+# Case 6 - an ambiguous date must produce a spoken question, not a guess,
+# and must not mint a hold token.
+id: 06-ambiguous-date
+title: Ambiguous date - "the tenth" with no month
+audio: 06-ambiguous-date.wav
+now: '2026-09-15'
+
+turns:
+  - user: 'Book the camera for the tenth'
+    expect_tool_calls:
+      - name: check_availability
+        status: needs_clarification
+        args:
+          equipment: camera_a
+    expect_reply_matches: 'October'
+    expect_no_hold: true
+  - user: 'October'
+    expect_tool_calls:
+      - name: check_availability
+        status: available
+        args:
+          equipment: camera_a
+      - name: propose_booking
+        status: ready
+
+expect:
+  # The fixture stops before any confirmation, so nothing may be written.
+  final_state: held
+  db_added: []
+  db_removed: []

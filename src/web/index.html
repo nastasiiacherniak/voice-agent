@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Equipment rental desk</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Icons are Lucide (ISC), inlined as a sprite so the page pulls nothing
+         from a CDN and the stroke follows currentColor. -->
+    <svg class="sprite" aria-hidden="true">
+      <symbol id="i-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+        <line x1="12" x2="12" y1="19" y2="22" />
+      </symbol>
+      <symbol id="i-mic-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="2" x2="22" y1="2" y2="22" />
+        <path d="M18.89 13.23A7.12 7.12 0 0 0 19 12v-2" />
+        <path d="M5 10v2a7 7 0 0 0 12 5" />
+        <path d="M15 9.34V5a3 3 0 0 0-5.68-1.33" />
+        <path d="M9 9v3a3 3 0 0 0 5.12 2.12" />
+        <line x1="12" x2="12" y1="19" y2="22" />
+      </symbol>
+      <symbol id="i-arrow-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m5 12 7-7 7 7" />
+        <path d="M12 19V5" />
+      </symbol>
+      <symbol id="i-rotate-ccw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+        <path d="M3 3v5h5" />
+      </symbol>
+      <symbol id="i-notepad-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 2v4" />
+        <path d="M12 2v4" />
+        <path d="M16 2v4" />
+        <rect width="16" height="18" x="4" y="4" rx="2" />
+        <path d="M8 10h6" />
+        <path d="M8 14h8" />
+        <path d="M8 18h5" />
+      </symbol>
+      <symbol id="i-paperclip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+      </symbol>
+      <symbol id="i-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m12 14 4-4" />
+        <path d="M3.34 19a10 10 0 1 1 17.32 0" />
+      </symbol>
+    </svg>
+
+    <!-- ------------------------------------------------------- navbar -->
+    <header class="navbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">AI&nbsp;Assistant</span>
+      </div>
+
+      <div class="nav-actions">
+        <span class="pill">
+          <svg class="icon" aria-hidden="true"><use href="#i-gauge" /></svg>
+          <span id="latency-pill">first answer: &mdash;</span>
+        </span>
+        <button id="reset-btn" class="ghost" type="button">
+          <svg class="icon" aria-hidden="true"><use href="#i-rotate-ccw" /></svg>
+          Reset demo data
+        </button>
+        <button
+          id="panel-btn"
+          class="ghost icon-only"
+          type="button"
+          aria-pressed="false"
+          aria-controls="state-panel"
+        >
+          <svg class="icon" aria-hidden="true"><use href="#i-notepad-text" /></svg>
+          <span class="sr-only" id="panel-btn-label">Show the state panel</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="app">
+      <!-- ----------------------------------------------------- main -->
+      <main class="main">
+        <div class="stage">
+          <section class="hero" id="hero">
+            <h1 class="greeting">What would you like to rent?</h1>
+          </section>
+
+          <div id="unsupported" class="notice" hidden>
+            This browser has no Web Speech API. Use Chrome or Edge for the voice flow &mdash;
+            the box below drives exactly the same pipeline in the meantime.
+          </div>
+
+          <div id="transcript" class="transcript" aria-live="polite"></div>
+
+          <div class="composer-wrap">
+            <!-- The status is the placeholder, which a screen reader only
+                 reads when the field is focused. This says it either way. -->
+            <span class="sr-only" id="status-live" aria-live="polite"></span>
+            <form id="type-form" class="composer" autocomplete="off">
+              <input id="type-input" type="text" placeholder="Ask anything&hellip;" />
+              <div class="composer-row">
+                <button id="clip-btn" class="icon-btn clip" type="button" title="Attachments are not part of this prototype">
+                  <svg class="icon" aria-hidden="true"><use href="#i-paperclip" /></svg>
+                  <span class="sr-only">Attach a file</span>
+                </button>
+                <span class="composer-spacer"></span>
+                <button id="mic-btn" class="icon-btn mic" type="button" aria-pressed="false">
+                  <svg class="icon icon-on" aria-hidden="true"><use href="#i-mic" /></svg>
+                  <svg class="icon icon-off" aria-hidden="true"><use href="#i-mic-off" /></svg>
+                  <span class="sr-only" id="mic-label">Start talking</span>
+                </button>
+                <button id="send-btn" type="submit" class="icon-btn send" disabled>
+                  <svg class="icon" aria-hidden="true"><use href="#i-arrow-up" /></svg>
+                  <span class="sr-only">Send</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <p class="disclaimer">
+            The agent checks live inventory and writes a reservation only after you confirm.
+          </p>
+
+          <div class="suggestions" id="suggestions">
+            <button type="button" class="chip" data-prompt="What do you have?">What&rsquo;s in stock?</button>
+            <button type="button" class="chip" data-prompt="I'd like a tripod from the 14th to the 16th of October 2026">Rent a tripod</button>
+            <button type="button" class="chip" data-prompt="I want two cameras from the 11th to the 13th of October 2026">Two cameras</button>
+            <button type="button" class="chip" data-prompt="Book the microphone on the 20th of October 2026 for two days">Microphone, 2 days</button>
+            <button type="button" class="chip" data-prompt="Book the camera for the tenth">An ambiguous date</button>
+          </div>
+        </div>
+      </main>
+
+      <!-- ---------------------------------------------------- panel -->
+      <aside class="panel" id="state-panel">
+        <header class="panel-head">
+          <h2>State</h2>
+        </header>
+
+        <div class="panel-body">
+          <section class="panel-section">
+            <h3>Conversation</h3>
+            <p class="state-line">
+              state: <strong id="state-name">idle</strong>
+              <span id="held-line"></span>
+            </p>
+          </section>
+
+          <section class="panel-section">
+            <h3>Inventory</h3>
+            <table class="stock" id="stock-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Total</th>
+                  <th>Free today</th>
+                  <th>Tightest day ahead</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </section>
+
+          <div id="booking-card" class="card" hidden>
+            <div class="card-head">
+              <span class="tick">&check;</span>
+              <h3>Booking confirmed</h3>
+            </div>
+            <dl id="booking-body"></dl>
+          </div>
+
+          <section class="panel-section">
+            <h3>Reservations</h3>
+            <table class="stock" id="res-table">
+              <thead>
+                <tr>
+                  <th>Id</th>
+                  <th>Item</th>
+                  <th>Dates</th>
+                  <th>Qty</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </section>
+
+          <section class="panel-section">
+            <h3>Tool calls <span class="hint">ordered, live</span></h3>
+            <ol id="tool-log" class="tool-log"></ol>
+          </section>
+        </div>
+      </aside>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

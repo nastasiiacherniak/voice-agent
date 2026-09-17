@@ -1,0 +1,46 @@
+{
+  "name": "voice-booking",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "description": "Browser voice agent for a small equipment rental desk",
+  "type": "module",
+  "scripts": {
+    "seed": "tsx scripts/seed-db.ts",
+    "build:web": "tsx scripts/build-web.ts",
+    "predev": "npm run build:web",
+    "dev": "tsx watch src/server.ts",
+    "prestart": "npm run build:web",
+    "start": "tsx src/server.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "snapshot": "tsx scripts/snapshot-db.ts",
+    "latency": "tsx scripts/report-latency.ts",
+    "cost": "tsx scripts/cost-model.ts",
+    "fixtures:audio": "tsx scripts/make-fixture-audio.ts",
+    "typecheck": "tsc --noEmit",
+    "fixtures:record": "echo \"Open http://localhost:8787/recorder.html while the server runs\""
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "better-sqlite3": "^11.5.0",
+    "border-beam": "^1.3.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "voice-glow": "^0.2.0",
+    "ws": "^8.18.0",
+    "yaml": "^2.6.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.9.0",
+    "@types/ws": "^8.5.13",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.5"
+  }
+}

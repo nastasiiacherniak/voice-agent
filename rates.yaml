@@ -1,0 +1,72 @@
+# Rate card for the cost model. Fetched, not remembered.
+# Re-fetch before quoting these anywhere: vendors change prices.
+fetched_at: '2026-09-15'
+
+llm:
+  claude-haiku-4-5:
+    input_per_mtok: 1.00
+    output_per_mtok: 5.00
+    # Fixed overhead the API adds whenever tools are declared (tool_choice auto).
+    tool_system_prompt_tokens: 496
+    verified: true
+    source: https://platform.claude.com/docs/en/about-claude/pricing
+
+stt:
+  browser_web_speech:
+    per_minute: 0.0
+    verified: true
+    note: >
+      Chrome/Edge Web Speech API. No API key, no metered cost to the developer.
+      This is what the shipped prototype uses.
+  deepgram_nova_3_streaming:
+    per_minute: 0.0048
+    list_per_minute: 0.0077
+    verified: true
+    source: https://deepgram.com/pricing
+    note: 0.0048 is the current pay-as-you-go rate; 0.0077 is the list price.
+
+tts:
+  browser_speech_synthesis:
+    per_1k_characters: 0.0
+    verified: true
+    note: Local OS voices via speechSynthesis. No metered cost.
+  deepgram_aura_2:
+    per_1k_characters: 0.030
+    verified: true
+    source: https://deepgram.com/pricing
+  deepgram_aura_1:
+    per_1k_characters: 0.015
+    verified: true
+    source: https://deepgram.com/pricing
+  cartesia_sonic:
+    per_1k_characters: null
+    verified: false
+    source: https://cartesia.ai/pricing
+    note: >
+      Cartesia publishes credit bundles per plan rather than a per-character
+      rate, so it cannot be quoted honestly here. Aura-2 is used as the priced
+      cloud TTS reference instead. ARCHITECTURE.md names Cartesia for its
+      sub-100 ms time-to-first-byte, which is a latency argument, not a price.
+
+speech_to_speech:
+  openai_gpt_realtime:
+    audio_input_per_mtok: 32.00
+    audio_output_per_mtok: 64.00
+    text_input_per_mtok: 4.00
+    verified: true
+    source: https://developers.openai.com/api/docs/pricing
+    assumed_audio_tokens_per_minute: 600
+    assumption_verified: false
+    assumption_note: >
+      The token-per-second rate for realtime audio is not stated on the pricing
+      page. 10 tokens/second (600/min) is the widely used figure and is the
+      assumption behind the speech-to-speech column. Treat that column as an
+      order-of-magnitude comparison, not a quote.
+
+speech:
+  # Used to convert characters of agent speech into speaking minutes.
+  agent_characters_per_minute: 900
+  # Used to estimate user speaking minutes when no audio duration was recorded.
+  user_words_per_minute: 150
+  # Rough token estimate when a run had no LLM attached to count them exactly.
+  characters_per_token: 4

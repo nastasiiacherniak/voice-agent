@@ -1,0 +1,125 @@
+{
+  "generated_at": "2026-09-15T09:43:07.295Z",
+  "voice": "windows-sapi",
+  "clips": [
+    {
+      "fixture": "01-normal-booking",
+      "turn": 1,
+      "file": "01-normal-booking-turn1.wav",
+      "text": "Hello, I'd like to rent a tripod please",
+      "kind": "user"
+    },
+    {
+      "fixture": "01-normal-booking",
+      "turn": 2,
+      "file": "01-normal-booking-turn2.wav",
+      "text": "From the 14th to the 16th of October 2026",
+      "kind": "user"
+    },
+    {
+      "fixture": "01-normal-booking",
+      "turn": 3,
+      "file": "01-normal-booking-turn3.wav",
+      "text": "Yes, confirm",
+      "kind": "user"
+    },
+    {
+      "fixture": "02-corrected-dates",
+      "turn": 1,
+      "file": "02-corrected-dates-turn1.wav",
+      "text": "I need a tripod from the 14th to the 16th of October 2026",
+      "kind": "user"
+    },
+    {
+      "fixture": "02-corrected-dates",
+      "turn": 2,
+      "file": "02-corrected-dates-turn2.wav",
+      "text": "Actually, can we make that the 20th to the 22nd of October instead",
+      "kind": "user"
+    },
+    {
+      "fixture": "02-corrected-dates",
+      "turn": 3,
+      "file": "02-corrected-dates-turn3.wav",
+      "text": "Yes, book it",
+      "kind": "user"
+    },
+    {
+      "fixture": "03-insufficient-stock",
+      "turn": 1,
+      "file": "03-insufficient-stock-turn1.wav",
+      "text": "I want two cameras from the 11th to the 13th of October 2026",
+      "kind": "user"
+    },
+    {
+      "fixture": "03-insufficient-stock",
+      "turn": 2,
+      "file": "03-insufficient-stock-turn2.wav",
+      "text": "Book it anyway",
+      "kind": "user"
+    },
+    {
+      "fixture": "04-interruption",
+      "turn": 1,
+      "file": "04-interruption-turn1.wav",
+      "text": "Can I have a tripod from the 14th to the 16th of October 2026",
+      "kind": "user"
+    },
+    {
+      "fixture": "04-interruption",
+      "turn": 2,
+      "file": "04-interruption-turn2.wav",
+      "text": "actually make it the microphone instead",
+      "kind": "barge_in"
+    },
+    {
+      "fixture": "04-interruption",
+      "turn": 3,
+      "file": "04-interruption-turn3.wav",
+      "text": "Actually make it the microphone instead",
+      "kind": "user"
+    },
+    {
+      "fixture": "04-interruption",
+      "turn": 4,
+      "file": "04-interruption-turn4.wav",
+      "text": "Yes, confirm",
+      "kind": "user"
+    },
+    {
+      "fixture": "05-repeated-confirmation",
+      "turn": 1,
+      "file": "05-repeated-confirmation-turn1.wav",
+      "text": "I would like the microphone on the 20th of October 2026 for two days",
+      "kind": "user"
+    },
+    {
+      "fixture": "05-repeated-confirmation",
+      "turn": 2,
+      "file": "05-repeated-confirmation-turn2.wav",
+      "text": "Yes, confirm",
+      "kind": "user"
+    },
+    {
+      "fixture": "05-repeated-confirmation",
+      "turn": 3,
+      "file": "05-repeated-confirmation-turn3.wav",
+      "text": "Yes, confirm",
+      "kind": "user"
+    },
+    {
+      "fixture": "06-ambiguous-date",
+      "turn": 1,
+      "file": "06-ambiguous-date-turn1.wav",
+      "text": "Book the camera for the tenth",
+      "kind": "user"
+    },
+    {
+      "fixture": "06-ambiguous-date",
+      "turn": 2,
+      "file": "06-ambiguous-date-turn2.wav",
+      "text": "October",
+      "kind": "user"
+    }
+  ]
+}

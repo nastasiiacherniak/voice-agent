@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # The one bundled file in src/web is gitignored, so build it here too -
+      # a broken island should fail CI, not the first `npm start` after a clone.
+      - run: npm run build:web
+
+      - run: npm run typecheck
+
+      # 145 tests: domain, gate, state machine, six recorded conversations.
+      # No key, no network, no microphone - the deterministic planner drives.
+      - run: npm test

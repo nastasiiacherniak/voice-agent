@@ -1,0 +1,20 @@
+node_modules/
+
+# Never commit a real key. .env.example is the template.
+.env
+
+# The database and the WAL/SHM files beside it - `npm run seed` recreates them,
+# and the server reseeds on boot.
+data/*.db
+data/*.db-journal
+data/*.db-shm
+data/*.db-wal
+
+# Latency samples, written per run.
+metrics/*.jsonl
+
+# Built by `npm run build:web` on every start.
+src/web/vendor/
+
+# Editor/agent local state; .claude/launch.json is checked in on purpose.
+.claude/settings.local.json

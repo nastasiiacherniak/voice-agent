@@ -1,0 +1,11 @@
+<!-- The brand mark, traced from the supplied raster: a rounded square with a
+     tilted lens cut out of it. One even-odd path, so the counter is a real
+     hole and whatever is behind shows through. Used as a CSS mask, so the
+     fill here is irrelevant - the colour comes from styles.css. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <path
+    fill="#000"
+    fill-rule="evenodd"
+    d="M8.044 0H15.956A8.044 8.044 0 0 1 24 8.044V15.956A8.044 8.044 0 0 1 15.956 24H8.044A8.044 8.044 0 0 1 0 15.956V8.044A8.044 8.044 0 0 1 8.044 0ZM2.7319 21.2761A13.071 7.321 -45.09 0 1 21.1881 2.7619A13.071 7.321 -45.09 0 1 2.7319 21.2761Z"
+  />
+</svg>

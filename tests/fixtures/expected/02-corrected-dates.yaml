@@ -1,0 +1,44 @@
+# Case 2 - the customer changes the dates before confirming.
+# The first hold must never become a row.
+id: 02-corrected-dates
+title: Corrected dates - asks 14-16 October, switches to 20-22 before confirming
+audio: 02-corrected-dates.wav
+now: '2026-09-15'
+
+turns:
+  - user: 'I need a tripod from the 14th to the 16th of October 2026'
+    expect_tool_calls:
+      - name: check_availability
+        status: available
+        args:
+          equipment: tripod_b
+      - name: propose_booking
+        status: ready
+  - user: 'Actually, can we make that the 20th to the 22nd of October instead'
+    expect_tool_calls:
+      - name: check_availability
+        status: available
+        args:
+          equipment: tripod_b
+      - name: propose_booking
+        status: ready
+    expect_reply_matches: '20'
+  - user: 'Yes, book it'
+    expect_tool_calls:
+      - name: confirm_booking
+        status: confirmed
+        created: true
+
+expect:
+  final_state: confirmed
+  db_added:
+    - equipment_id: tripod_b
+      start_date: '2026-10-20'
+      end_date: '2026-10-22'
+      quantity: 1
+      status: confirmed
+  db_removed: []
+  # The token minted by the first check is never used.
+  db_absent:
+    - equipment_id: tripod_b
+      start_date: '2026-10-14'

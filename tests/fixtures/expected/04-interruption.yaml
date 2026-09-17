@@ -1,0 +1,44 @@
+# Case 4 - the customer cuts in during the read-back and changes the item.
+# Audio must stop, the in-flight turn must be cancelled, the old hold dropped.
+id: 04-interruption
+title: Interruption - cuts in during the read-back and switches to the microphone
+audio: 04-interruption.wav
+now: '2026-09-15'
+
+turns:
+  - user: 'Can I have a tripod from the 14th to the 16th of October 2026'
+    expect_tool_calls:
+      - name: check_availability
+        status: available
+        args:
+          equipment: tripod_b
+      - name: propose_booking
+        status: ready
+  - barge_in: 'actually make it the microphone instead'
+    expect_stop_audio: true
+    expect_no_hold: true
+  - user: 'Actually make it the microphone instead'
+    expect_tool_calls:
+      - name: check_availability
+        status: available
+        args:
+          equipment: mic_c
+      - name: propose_booking
+        status: ready
+  - user: 'Yes, confirm'
+    expect_tool_calls:
+      - name: confirm_booking
+        status: confirmed
+        created: true
+
+expect:
+  final_state: confirmed
+  db_added:
+    - equipment_id: mic_c
+      start_date: '2026-10-14'
+      end_date: '2026-10-16'
+      quantity: 1
+      status: confirmed
+  db_removed: []
+  db_absent:
+    - equipment_id: tripod_b
